@@ -23,10 +23,21 @@
                 <label for="username" class="form-label">Username</label>
             </div>
             <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.FirstName" id="firstName" class="form-control" placeholder="Enter your first name" />
+                <label for="firstName" class="form-label">First Name</label>
+                <ValidationMessage For="() => Input.FirstName" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.LastName" id="lastName" class="form-control" placeholder="Enter your last name" />
+                <label for="lastName" class="form-label">Last Name</label>
+                <ValidationMessage For="() => Input.LastName" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" placeholder="Enter your phone number" />
                 <label for="Input.PhoneNumber" class="form-label">Phone number</label>
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
             </div>
+
             <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </EditForm>
     </div>
@@ -36,6 +47,9 @@
     private ApplicationUser? user;
     private string? username;
     private string? phoneNumber;
+    private string? firstName;
+    private string? lastName;
+    private string? un2;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -56,8 +70,15 @@
 
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+        firstName = user.FirstName;
+        lastName = user.LastName; 
+        un2 = user.UserName;
+
 
         Input.PhoneNumber ??= phoneNumber;
+        Input.FirstName ??= firstName;
+        Input.LastName ??= lastName;
+
     }
 
     private async Task OnValidSubmitAsync()
@@ -78,12 +99,34 @@
             }
         }
 
+        if (firstName != Input.FirstName || lastName != Input.LastName)
+        {
+            user.FirstName = Input.FirstName;
+            user.LastName = Input.LastName;
+
+            var updateResult = await UserManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to update profile.", HttpContext);
+                return;
+            }
+        }
+
         await SignInManager.RefreshSignInAsync(user);
         RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
     }
 
     private sealed class InputModel
     {
+        [Required]
+        [Display(Name = "First Name")]
+        public string? FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string? LastName { get; set; }
+
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
