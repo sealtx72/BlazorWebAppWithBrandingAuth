@@ -1,3 +1,4 @@
+using BlazorWebAppWithBrandingAuth.Models;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
@@ -11,6 +12,10 @@ namespace BlazorWebAppWithBrandingAuth.Data
 
         [Required]
         public string? LastName { get; set; }
+
+        public Guid? ProfilePictureId { get; set; }
+
+        public virtual ImageUpload? ProfilePicture { get; set; }
     }
 
 }
